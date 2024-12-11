@@ -1,0 +1,21 @@
+#!/bin/bash
+#SBATCH -c 2
+#SBATCH -t 0-8:10
+#SBATCH --mem=30G
+#SBATCH -p bch-compute
+#SBATCH -o L1_CL_DoxOrf_Dox_B5_get_clip_disc_polyA_%j.out
+
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/check_polyA_from_sam.pl L1_CL_DoxOrf_Dox_B5/L1/tmp/L1_CL_DoxOrf_Dox_B5.bam.clipped.sam_partial_polyA.sam L1_CL_DoxOrf_Dox_B5/L1/tmp/L1_CL_DoxOrf_Dox_B5.bam.clipped.sam.sam L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp > L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam
+perl /home/ch237385/bin/BCH/method_development/add_disc_info_at_candidate_list_from_clip.txt_tmp.pl L1_CL_DoxOrf_Dox_B5/L1/tmp/raw_discordant_reads_tmp0_seplf L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam > L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam.add_disc
+perl /home/ch237385/bin/BCH/method_development/add_polyA_info_again.pl L1_CL_DoxOrf_Dox_B5/L1_add_polyA_at_clip_stp/candidate_list_from_clip.txt_tmp L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam.add_disc > L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam.add_disc.add_xTea_polyA
+perl -lane 'next if /merged_in_peak/; if(/lclip_cnt/){print "type1/2\t$_"; next}; if(($F[5]+$F[6])>0 && ($F[12]+$F[13])>0){print "with_both_clip_disc\t$_"}elsif($F[5]+$F[6]>0){print "with_only_clip\t$_";}elsif($F[12]+$F[13]>0){print "with_only_disc\t$_";}else{print "other\t$_"}' L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam.add_disc.add_xTea_polyA | sort > L1_CL_DoxOrf_Dox_B5/L1/ORFeus_insertion.sub-types.txt
+perl /home/ch237385/bin/BCH/method_development/extend_to_ORFeus/cal_realign_cnt_2-types.pl L1_CL_DoxOrf_Dox_B5/L1/ORFeus_insertion.sub-types.txt L1_CL_DoxOrf_Dox_B5/L1/tmp/L1_CL_DoxOrf_Dox_B5.bam.clipped.sam > L1_CL_DoxOrf_Dox_B5/L1/ORFeus_insertion.sub-types.txt.add_clip_ORFeus_ratio
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/check_polyA_and_cns_pos_score_cigar_from_sam.pl L1_CL_DoxOrf_Dox_B5/L1/tmp/L1_CL_DoxOrf_Dox_B5.bam.clipped.sam L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp > L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_cns_pos
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/add_L1_pos_clip_reads_disc_reads.pl L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_cns_pos L1_CL_DoxOrf_Dox_B5/L1/tmp/raw_discordant_reads_tmp0_seplf L1_CL_DoxOrf_Dox_B5/L1/ORFeus_insertion.sub-types.txt.add_clip_ORFeus_ratio > L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt
+perl -lane 'print "$F[1]\t$F[2]\t$F[3]\t$F[4]\t$F[12]\t$F[13]\t$F[21]\t$F[22]\t$F[23]\t$F[24]"' L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt > L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/convert_format_for_clip_disc_polyA_Info.pl L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info > L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info.ts
+/home/ch237385/bin/BCH/bin/msort -k 1 -k n2 L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info.ts > L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info.ts.sort
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/extract_the_pseudogene.pl L1_CL_DoxOrf_Dox_B5/L1/clip_disc_polyA_Info.txt.exclude_L1_info.ts.sort > L1_CL_DoxOrf_Dox_B5/L1/pseudogenes.txt
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/check_ref_repeat.pl /lab-share/Gene-Lee-e2/Public/home/xizeng/ref/repeat_masker/hg38_repeat_masker.tsv.sort L1_CL_DoxOrf_Dox_B5/L1/pseudogenes.txt > L1_CL_DoxOrf_Dox_B5/L1/pseudogenes_rm_rep.txt
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/flt_L1-del_by_near_clip.pl L1_CL_DoxOrf_Dox_B5/L1/candidate_list_from_clip.txt_tmp.add_polyA_from_sam.add_disc.add_xTea_polyA L1_CL_DoxOrf_Dox_B5/L1/pseudogenes_rm_rep.txt > L1_CL_DoxOrf_Dox_B5/L1/pseudogenes_rm_rep.txt.flt_by_near_clip
+perl /home/ch237385/bin/BCH/method_development/extend_to_pseudogene/select_ins_of_left_eq_right.pl L1_CL_DoxOrf_Dox_B5/L1/pseudogenes_rm_rep.txt.flt_by_near_clip > L1_CL_DoxOrf_Dox_B5/L1/pseudogenes_rm_rep.txt.flt_by_near_clip.final
